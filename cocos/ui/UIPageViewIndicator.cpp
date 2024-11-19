@@ -1,5 +1,6 @@
 /****************************************************************************
 Copyright (c) 2015 Neo Kim (neo.kim@neofect.com)
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -33,7 +34,7 @@ NS_CC_BEGIN
 
 namespace {
     static const float SPACE_BETWEEN_INDEX_NODES_DEFAULT = 23;
-    static const GLubyte INDEX_NODES_OPACITY_DEFAULT = 0.3*255;
+    static const uint8_t INDEX_NODES_OPACITY_DEFAULT = 0.3*255;
 }
 
 namespace ui {
@@ -164,7 +165,7 @@ void PageViewIndicator::setIndexNodesColor(const Color3B& indexNodesColor)
     }
 }
     
-void PageViewIndicator::setIndexNodesOpacity(GLubyte opacity) {
+void PageViewIndicator::setIndexNodesOpacity(uint8_t opacity) {
     _indexNodesOpacity = opacity;
     for ( auto& indexNode : _indexNodes )
         indexNode->setOpacity(opacity);
@@ -215,6 +216,10 @@ void PageViewIndicator::setIndexNodesTexture(const std::string& texName, Widget:
     
 void PageViewIndicator::increaseNumberOfPages()
 {
+    if ( _currentOverlappingIndexNode ) {
+        _currentOverlappingIndexNode->setVisible(true);
+        _currentOverlappingIndexNode = nullptr;
+    }
     Sprite* indexNode;
     
     if(_useDefaultTexture)
@@ -245,6 +250,10 @@ void PageViewIndicator::increaseNumberOfPages()
 
 void PageViewIndicator::decreaseNumberOfPages()
 {
+    if ( _currentOverlappingIndexNode ) {
+        _currentOverlappingIndexNode->setVisible(true);
+        _currentOverlappingIndexNode = nullptr;
+    }
     if(_indexNodes.empty())
     {
         return;
@@ -255,6 +264,10 @@ void PageViewIndicator::decreaseNumberOfPages()
 
 void PageViewIndicator::clear()
 {
+    if ( _currentOverlappingIndexNode ) {
+        _currentOverlappingIndexNode->setVisible(true);
+        _currentOverlappingIndexNode = nullptr;
+    }
     for(auto& indexNode : _indexNodes)
     {
         removeProtectedChild(indexNode);

@@ -1,6 +1,7 @@
 /****************************************************************************
  Copyright (c) 2010-2012 cocos2d-x.org
- Copyright (c) 2013-2017 Chukong Technologies Inc.
+ Copyright (c) 2013-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
  http://www.cocos2d-x.org
 
@@ -22,10 +23,6 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
  ****************************************************************************/
-
-#include "platform/CCPlatformConfig.h"
-#if CC_TARGET_PLATFORM == CC_PLATFORM_IOS
-
 #include <mach/mach_time.h>
 
 #import "platform/ios/CCDirectorCaller-ios.h"
@@ -90,6 +87,11 @@ static id s_sharedDirectorCaller;
 
 - (void)appDidBecomeActive
 {
+    // initialize initLastDisplayTime, or the dt will be invalid when
+    // - the app is lauched
+    // - the app resumes from background
+    [self initLastDisplayTime];
+
     isAppActive = YES;
 }
 
@@ -100,12 +102,8 @@ static id s_sharedDirectorCaller;
 
 -(void) startMainLoop
 {
-        // Director::setAnimationInterval() is called, we should invalidate it first
+    // Director::setAnimationInterval() is called, we should invalidate it first
     [self stopMainLoop];
-    
-    // initialize initLastDisplayTime, or the dt of of first frame is invalid
-    // should init before start displayLink
-    [self initLastDisplayTime];
     
     displayLink = [NSClassFromString(@"CADisplayLink") displayLinkWithTarget:self selector:@selector(doCaller:)];
     [displayLink setFrameInterval: self.interval];
@@ -134,12 +132,6 @@ static id s_sharedDirectorCaller;
 {
     if (isAppActive) {
         cocos2d::Director* director = cocos2d::Director::getInstance();
-        EAGLContext* cocos2dxContext = [(CCEAGLView*)director->getOpenGLView()->getEAGLView() context];
-        if (cocos2dxContext != [EAGLContext currentContext])
-            glFlush();
-        
-        [EAGLContext setCurrentContext: cocos2dxContext];
-
         CFTimeInterval dt = ((CADisplayLink*)displayLink).timestamp - lastDisplayTime;
         lastDisplayTime = ((CADisplayLink*)displayLink).timestamp;
         director->mainLoop(dt);
@@ -157,6 +149,3 @@ static id s_sharedDirectorCaller;
 }
 
 @end
-
-#endif // CC_TARGET_PLATFORM == CC_PLATFORM_IOS
-
